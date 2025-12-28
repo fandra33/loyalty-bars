@@ -1,0 +1,35 @@
+# Secrets - IMPORTANT!
+.env
+secrets/
+*.key
+*.pem
+
+# Java/Maven
+target/
+*.jar
+*.war
+*.ear
+.mvn/
+mvnw
+mvnw.cmd
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+build/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Docker
+*.log
