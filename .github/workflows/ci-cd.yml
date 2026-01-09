@@ -149,8 +149,11 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "QR_SERVICE_SECRET=${{ secrets.QR_SERVICE_SECRET }}" >> .env
       
+      - name: Set up Docker Compose
+        uses: docker/compose-action@v4
+
       - name: Start services
-        run: docker-compose up -d
+        run: docker compose up -d
       
       - name: Wait for services
         run: |
@@ -170,10 +173,10 @@ jobs:
       
       - name: Show logs on failure
         if: failure()
-        run: docker-compose logs
+        run: docker compose logs
       
       - name: Cleanup
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
 
 
