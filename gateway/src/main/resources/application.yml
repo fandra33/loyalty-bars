@@ -1,0 +1,121 @@
+spring:
+  application:
+    name: loyalty-gateway
+  
+  # Database Configuration (15p - Persistență)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/loyalty_db
+    username: loyalty_user
+    password: ${POSTGRES_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+  
+  # Flyway Migration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  
+  # Security
+  security:
+    user:
+      name: admin
+      password: admin123
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# JWT Configuration (10p - Secret Management)
+jwt:
+  secret: ${JWT_SECRET:your_super_secret_jwt_key_minimum_256_bits_long}
+  expiration: 86400000 # 24 hours in milliseconds
+
+# QR Service Configuration
+qr-service:
+  url: ${QR_SERVICE_URL:http://localhost:8000}
+
+# Actuator Configuration (10p - Observabilitate)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+#        enabled: true
+    tags:
+      application: ${spring.application.name}
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# Logging Configuration (10p - Observabilitate)
+logging:
+  level:
+    root: INFO
+    com.loyalty.gateway: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# OpenAPI/Swagger Configuration (15p - REST API documentat)
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: true
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+qr-service:
+  url: http://qr-service:8000
+
+logging:
+  level:
+    root: INFO
+    com.loyalty.gateway: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG

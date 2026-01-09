@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: loyalty-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - loyalty-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: loyalty-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      QR_SERVICE_URL: http://qr-service:8000
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qr-service:
+        condition: service_healthy
+    networks:
+      - loyalty-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  qr-service:
+    build:
+      context: ./qr-service
+      dockerfile: Dockerfile
+    container_name: loyalty-qr-service
+    environment:
+      QR_SERVICE_SECRET: ${QR_SERVICE_SECRET}
+      GATEWAY_URL: http://gateway:8080
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "${QR_SERVICE_PORT:-8000}:8000"
+    networks:
+      - loyalty-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  loyalty-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
