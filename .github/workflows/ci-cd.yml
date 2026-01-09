@@ -59,7 +59,7 @@ jobs:
       - name: Run tests and Generate coverage report
         working-directory: ./gateway
         # Use fully-qualified plugin goal to avoid "No plugin found for prefix 'jacoco'" errors
-        run: mvn -B -f gateway/pom.xml clean test org.jacoco:jacoco-maven-plugin:0.8.10:report
+        run: mvn -B clean test org.jacoco:jacoco-maven-plugin:0.8.10:report
   
   # Test QR Service
   test-qr-service:
