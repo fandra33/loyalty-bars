@@ -48,13 +48,17 @@ jobs:
           cache: maven
           cache-dependency-path: gateway/pom.xml
       
-      - name: Run tests
+      - name: Debug Java and Maven
         working-directory: ./gateway
-        run: mvn clean test
-      
-      - name: Generate coverage report
+        run: |
+          echo "== java version =="
+          java -version
+          echo "== mvn version =="
+          mvn -v
+
+      - name: Run tests and Generate coverage report
         working-directory: ./gateway
-        run: mvn jacoco:report
+        run: mvn -B clean test jacoco:report
   
   # Test QR Service
   test-qr-service:
