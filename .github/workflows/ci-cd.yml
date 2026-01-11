@@ -58,7 +58,6 @@ jobs:
 
       - name: Run tests and Generate coverage report
         working-directory: ./gateway
-        # Use fully-qualified plugin goal to avoid "No plugin found for prefix 'jacoco'" errors
         run: mvn -B clean test org.jacoco:jacoco-maven-plugin:0.8.10:report
   
   # Test QR Service
@@ -149,11 +148,19 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "QR_SERVICE_SECRET=${{ secrets.QR_SERVICE_SECRET }}" >> .env
       
-      - name: Start services with Docker Compose Action
-        uses: docker/compose-action@v2
-        with:
-          compose-file: docker-compose.yml
-          args: up -d --build
+      - name: Install Docker Compose plugin
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
+          DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+          mkdir -p $DOCKER_CONFIG/cli-plugins
+          curl -SL https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64 \
+            -o $DOCKER_CONFIG/cli-plugins/docker-compose
+          chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+          docker compose version
+
+      - name: Start services
+        run: docker compose up -d
       
       - name: Wait for services
         run: |
@@ -173,12 +180,8 @@ jobs:
       
       - name: Show logs on failure
         if: failure()
-        uses: docker/compose-action@v2
-        with:
-          args: logs --no-color
+        run: docker compose logs
       
       - name: Cleanup
         if: always()
-        uses: docker/compose-action@v2
-        with:
-          args: down -v
+        run: docker compose down -v
