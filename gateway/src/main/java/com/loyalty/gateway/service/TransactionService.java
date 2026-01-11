@@ -1,4 +1,3 @@
-// Locație: gateway/src/main/java/com/loyalty/gateway/service/TransactionService.java
 package com.loyalty.gateway.service;
 
 import com.loyalty.gateway.exception.CustomExceptions.*;

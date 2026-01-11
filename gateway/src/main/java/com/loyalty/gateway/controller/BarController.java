@@ -1,4 +1,3 @@
-// Locație: gateway/src/main/java/com/loyalty/gateway/controller/BarController.java
 package com.loyalty.gateway.controller;
 
 import com.loyalty.gateway.model.dto.BarDTO;

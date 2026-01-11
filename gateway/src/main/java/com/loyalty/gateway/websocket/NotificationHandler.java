@@ -1,4 +1,3 @@
-// Locație: gateway/src/main/java/com/loyalty/gateway/websocket/NotificationHandler.java
 package com.loyalty.gateway.websocket;
 
 import com.loyalty.gateway.security.JwtTokenProvider;

@@ -1,4 +1,3 @@
-// Locație: gateway/src/main/java/com/loyalty/gateway/service/WebSocketService.java
 package com.loyalty.gateway.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
