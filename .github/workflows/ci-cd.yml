@@ -41,7 +41,7 @@ jobs:
           timeout 60 bash -c 'until pg_isready -h localhost -p 5432 -U ${POSTGRES_USER}; do sleep 2; done'
       
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
