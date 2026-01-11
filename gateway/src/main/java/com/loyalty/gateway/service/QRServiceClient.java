@@ -1,6 +1,4 @@
 package com.loyalty.gateway.service;
-
-import com.loyalty.gateway.exception.CustomExceptions.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;

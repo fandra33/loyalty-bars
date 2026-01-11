@@ -109,14 +109,6 @@ public class QRCodeService {
         User client = qrCode.getClient();
         if (client == null) {
             // Fallback for older QR codes or migration issues, though V3 should prevent
-            // this if data was backfilled.
-            // For now, let's assume we might need to find the user some other way or throw
-            // error.
-            // But since V3 makes client_id nullable (initially), let's just log and throw
-            // or handle gracefully.
-            // Actually V3 didn't add NOT NULL constraint immediately.
-            // In a real scenario, we'd query recent transactions or something, but here,
-            // let's assume valid flow.
             throw new ServiceException("QR code does not have an associated client");
         }
 
@@ -159,8 +151,6 @@ public class QRCodeService {
     public void handleQRNotification(Map<String, Object> notification) {
         String qrCode = (String) notification.get("qr_code");
         log.info("Received transaction confirmation notification from QR service for code: {}", qrCode);
-        // This is primarily for meeting the requirement of microservice calling
-        // gateway.
         // The actual transaction is usually processed during the validation call.
     }
 }

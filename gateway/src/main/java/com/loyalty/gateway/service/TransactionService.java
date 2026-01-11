@@ -5,7 +5,6 @@ import com.loyalty.gateway.model.dto.*;
 import com.loyalty.gateway.model.entity.Bar;
 import com.loyalty.gateway.model.entity.Transaction;
 import com.loyalty.gateway.model.entity.User;
-import com.loyalty.gateway.model.entity.TransactionType;
 import com.loyalty.gateway.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
