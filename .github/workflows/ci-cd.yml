@@ -154,7 +154,6 @@ jobs:
         with:
           compose-file: docker-compose.yml
           args: up -d --build
-
       
       - name: Wait for services
         run: |
@@ -183,5 +182,3 @@ jobs:
         uses: docker/compose-action@v2
         with:
           args: down -v
-
-
