@@ -5,6 +5,8 @@ from app.config import settings
 from app.routes import qr_routes, health_routes
 from app.utils.logger import logger
 from app.utils.metrics import MetricsMiddleware
+from app.services.rabbit_consumer import RabbitConsumer
+import threading
 
 # Create FastAPI app
 app = FastAPI(
@@ -31,6 +33,9 @@ app.add_middleware(MetricsMiddleware)
 app.include_router(qr_routes.router)
 app.include_router(health_routes.router)
 
+consumer = None
+consumer_thread = None
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -39,11 +44,28 @@ async def startup_event():
     logger.info(f"Debug mode: {settings.debug}")
     logger.info(f"Gateway URL: {settings.gateway_url}")
 
+    # start rabbit consumer in background
+    try:
+        global consumer, consumer_thread
+        consumer = RabbitConsumer()
+        consumer_thread = threading.Thread(target=consumer.start_consuming, daemon=True)
+        consumer_thread.start()
+        logger.info("RabbitMQ consumer started in background thread")
+    except Exception as e:
+        logger.error(f"Failed to start RabbitMQ consumer: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Actions to perform on application shutdown"""
     logger.info(f"Shutting down {settings.app_name}")
+    # stop consumer
+    try:
+        global consumer
+        if consumer:
+            consumer.close()
+    except Exception as e:
+        logger.warn(f"Error stopping Rabbit consumer: {e}")
 
 
 @app.get("/", tags=["Root"])
