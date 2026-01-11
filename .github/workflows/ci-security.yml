@@ -33,7 +33,7 @@ jobs:
           java-version: '21'
 
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -59,7 +59,7 @@ jobs:
           python-version: '3.11'
 
       - name: Cache pip
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/qr-service/requirements.txt') }}
@@ -124,7 +124,7 @@ jobs:
           docker build -t qr-service:${{ github.run_id }} ./qr-service
 
       - name: Cache Trivy DB
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/trivy
           key: ${{ runner.os }}-trivy-${{ github.sha }}
