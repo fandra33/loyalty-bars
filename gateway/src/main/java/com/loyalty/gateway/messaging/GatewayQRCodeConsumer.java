@@ -1,9 +1,7 @@
 package com.loyalty.gateway.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.loyalty.gateway.repository.ProcessedEventRepository;
 import com.loyalty.gateway.repository.QRCodeRepository;
-import com.loyalty.gateway.model.entity.ProcessedEvent;
 import com.loyalty.gateway.model.entity.QRCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,23 +17,15 @@ import java.util.Optional;
 public class GatewayQRCodeConsumer {
 
     private final QRCodeRepository qrCodeRepository;
-    private final ProcessedEventRepository processedEventRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @RabbitListener(queues = RabbitConfig.QR_CREATED_QUEUE)
     public void handleQrCreated(String body) {
         try {
             Map<String, Object> event = objectMapper.readValue(body, Map.class);
-            String eventId = (String) event.get("eventId");
             String qrCode = (String) event.get("qrCode");
             String imageData = (String) event.get("qrImageData");
-            log.info("Received qr.created event for {} (eventId={})", qrCode, eventId);
-
-            // idempotency: skip if event already processed
-            if (eventId != null && processedEventRepository.findByEventId(eventId).isPresent()) {
-                log.info("Event {} already processed, skipping", eventId);
-                return;
-            }
+            log.info("Received qr.created event for {}", qrCode);
 
             Optional<QRCode> optional = qrCodeRepository.findByCode(qrCode);
             if (optional.isPresent()) {
@@ -51,15 +41,10 @@ public class GatewayQRCodeConsumer {
                 log.warn("QRCode {} not found in DB", qrCode);
             }
 
-            // mark event as processed
-            if (eventId != null) {
-                ProcessedEvent pe = ProcessedEvent.builder().eventId(eventId).build();
-                processedEventRepository.save(pe);
-            }
-
         } catch (Exception e) {
             log.error("Failed to process qr.created event", e);
             throw new RuntimeException(e);
         }
     }
 }
+
