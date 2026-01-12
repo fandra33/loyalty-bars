@@ -30,7 +30,6 @@ public class QRCodeService {
     private final TransactionService transactionService;
     private final WebSocketService webSocketService;
     private final MeterRegistry meterRegistry;
-    private final com.loyalty.gateway.messaging.QRCodeProducer qrCodeProducer;
 
     private static final int QR_CODE_EXPIRATION_MINUTES = 15;
 
@@ -61,20 +60,21 @@ public class QRCodeService {
 
         qrCode = qrCodeRepository.save(qrCode);
 
-        // publish an event to RabbitMQ so qr-service can generate the QR image asynchronously
-        try {
-            qrCodeProducer.sendQrRequestedEvent(qrCode.getCode(), bar.getId(), request.getAmount());
-        } catch (Exception ex) {
-            log.warn("Failed to publish qr.requested event to RabbitMQ", ex);
+        QRServiceClient.QRGenerationResponse qrResponse = qrServiceClient.generateQRCode(
+                code,
+                bar.getId(),
+                request.getAmount());
+
+        if (!qrResponse.isSuccess()) {
+            throw new ServiceException("Failed to generate QR image: " + qrResponse.getMessage());
         }
 
-        log.info("QR code queued: {} for bar: {} by user: {}",
+        log.info("QR code generated: {} for bar: {} by user: {}",
                 code, bar.getName(), currentUser.getEmail());
 
         meterRegistry.counter("loyalty.qrcodes.generated", "bar", bar.getName()).increment();
 
-        // Return the QRCode entity without image data (processing is asynchronous)
-        return QRCodeResponse.fromEntity(qrCode, null);
+        return QRCodeResponse.fromEntity(qrCode, qrResponse.getQrImageData());
     }
 
     @Transactional

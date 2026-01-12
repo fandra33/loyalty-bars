@@ -57,9 +57,6 @@ public class QRCode {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "qr_image_data", columnDefinition = "text")
-    private String qrImageData;
-
     // Helper methods
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
